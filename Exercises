@@ -1,0 +1,123 @@
+###  Inner join
+# Merge the taxi_owners and taxi_veh tables
+taxi_own_veh = taxi_owners.merge(taxi_veh, on='vid')
+
+# Print the column names of the taxi_own_veh
+print(taxi_own_veh.columns)
+
+## Inner joins and number of rows returned
+# Merge the wards and census tables on the ward column
+wards_census = wards.merge(census,on='ward')
+
+# Print the shape of wards_census
+print('wards_census table shape:', wards_census.shape)
+
+# Print the first few rows of the wards_altered table to view the change 
+print(wards_altered[['ward']].head())
+
+# Merge the wards_altered and census tables on the ward column
+wards_altered_census = wards_altered.merge(census, on='ward')
+
+# Print the shape of wards_altered_census
+print('wards_altered_census table shape:', wards_altered_census.shape)
+
+###   One-to-many relationships
+# Merge the licenses and biz_owners table on account
+licenses_owners = licenses.merge(biz_owners, on='account')
+
+# Group the results by title then count the number of accounts
+counted_df = licenses_owners.groupby('title').agg({'account':'count'})
+
+# Sort the counted_df in desending order
+sorted_df = counted_df.sort_values(by='account', ascending=False)
+
+# Use .head() method to print the first few rows of sorted_df
+print(sorted_df.head())
+
+###  Merging multiple DataFrames
+## Total riders in a month
+# Merge the ridership and cal tables
+ridership_cal = ridership.merge(cal, on=['year','month','day'])
+
+# Merge the ridership, cal, and stations tables
+ridership_cal_stations = ridership.merge(cal, on=['year','month','day']) \
+.merge(stations,on='station_id')
+
+# Merge the ridership, cal, and stations tables
+ridership_cal_stations = ridership.merge(cal, on=['year','month','day']) \
+							.merge(stations, on='station_id')
+
+# Create a filter to filter ridership_cal_stations
+filter_criteria = ((ridership_cal_stations['month'] == 7) 
+                   & (ridership_cal_stations['day_type'] == 'Weekday') 
+                   & (ridership_cal_stations['station_name'] == 'Wilson'))
+
+# Use .loc and the filter to select for rides
+print(ridership_cal_stations.loc[filter_criteria, 'rides'].sum())
+
+## Three table merge
+# Merge licenses and zip_demo, on zip; and merge the wards on ward
+licenses_zip_ward = licenses.merge(zip_demo, on='zip') \
+            			.merge(wards,on='ward')
+
+# Print the results by alderman and show median income
+print(licenses_zip_ward.groupby('alderman').agg({'income':'median'}))
+
+# One-to-many merge with multiple tables
+# Merge land_use and census and merge result with licenses including suffixes
+land_cen_lic = land_use.merge(census,on='ward')\
+.merge(licenses,on='ward', suffixes=('_cen','_lic'))
+
+# Group by ward, pop_2010, and vacant, then count the # of accounts
+pop_vac_lic = land_cen_lic.groupby(['ward','pop_2010','vacant'], 
+                                   as_index=False).agg({'account':'count'})
+# Merge land_use and census and merge result with licenses including suffixes
+land_cen_lic = land_use.merge(census, on='ward') \
+                    .merge(licenses, on='ward', suffixes=('_cen','_lic'))
+                    
+# Group by ward, pop_2010, and vacant, then count the # of accounts
+pop_vac_lic = land_cen_lic.groupby(['ward','pop_2010','vacant'], 
+                                   as_index=False).agg({'account':'count'})
+
+# Sort pop_vac_lic and print the results
+sorted_pop_vac_lic = pop_vac_lic.sort_values(['vacant','account','pop_2010'], 
+                                             ascending=[False,True,True])
+
+# Print the top few rows of sorted_pop_vac_lic
+print(sorted_pop_vac_lic.head())
+
+###   Left join
+## Counting missing rows with left join
+# Merge movies and financials with a left join
+movies_financials = movies.merge(financials, on='id', how='left')
+
+# Count the number of rows in the budget column that are missing
+number_of_missing_fin = movies_financials['budget'].isnull().sum()
+
+# Print the number of movies missing financials
+print(number_of_missing_fin)
+
+## Enriching a dataset
+# Merge the toy_story and taglines tables with a left join
+toystory_tag = toy_story.merge(taglines,on='id', how='left')
+
+# Print the rows and shape of toystory_tag
+print(toystory_tag)
+print(toystory_tag.shape)
+
+###   Other joins
+# Merge action_movies to the scifi_movies with right join
+action_scifi = action_movies.merge(scifi_movies, on='movie_id', how='right',
+                                   suffixes=('_act','_sci'))
+
+# From action_scifi, select only the rows where the genre_act column is null
+scifi_only = action_scifi[action_scifi['genre_act'].isnull()]
+
+# Merge the movies and scifi_only tables with an inner join
+movies_and_scifi_only = movies.merge(scifi_only, left_on='id', right_on='movie_id')
+
+# Print the first few rows and shape of movies_and_scifi_only
+print(movies_and_scifi_only.head())
+print(movies_and_scifi_only.shape)
+
+
